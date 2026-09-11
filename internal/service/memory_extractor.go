@@ -250,10 +250,10 @@ func buildExtractedMessage(messageID, sourceID int64, memoryID string, msg Memor
 	if !ok {
 		validAt = now.Format(memoryTimeLayout)
 	}
-	invalidAt, ok := normalizeMemoryTime(item.InvalidAt)
-	if strings.TrimSpace(item.InvalidAt) != "" && !ok {
-		invalidAt = now.Format(memoryTimeLayout)
-	}
+	// An invalid_at the model made up parses to "", which persists as nil and
+	// leaves the memory valid — Python does the same via fallback="". Falling
+	// back to now here would instead expire the memory at extraction time.
+	invalidAt, _ := normalizeMemoryTime(item.InvalidAt)
 	var storedInvalidAt any
 	if invalidAt != "" {
 		storedInvalidAt = invalidAt
